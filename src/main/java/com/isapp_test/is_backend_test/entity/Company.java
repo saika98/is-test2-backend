@@ -3,16 +3,16 @@ package com.isapp_test.is_backend_test.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "\"Company\"")
+@Table(name = "\"company\"")
 public class Company {
     @Id
-    @Column(name = "\"CompanyID\"")
+    @Column(name = "\"companyid\"")
     private Integer companyId;
 
-    @Column(name = "\"CompanyName\"", nullable = false)
+    @Column(name = "\"company_name\"", nullable = false)
     private String companyName;
 
-    @Column(name = "\"CompanyAddress\"", nullable = false)
+    @Column(name = "\"company_address\"", nullable = false)
     private String companyAddress;
 
     public Integer getCompanyId() { return companyId; }
