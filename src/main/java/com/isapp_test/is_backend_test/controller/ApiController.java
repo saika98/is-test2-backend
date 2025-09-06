@@ -20,6 +20,10 @@ public class ApiController {
         this.companyRepo = companyRepo;
     }
 
+        // userテーブルのCRUD処理
+    @GetMapping("/message")
+    public String message() { return "backend起動中"; }
+
     // userテーブルのCRUD処理
     @GetMapping("/users")
     public List<User> users() { return userRepo.findAll(); }
