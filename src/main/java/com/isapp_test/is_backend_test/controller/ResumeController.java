@@ -47,4 +47,12 @@ public class ResumeController {
   public void delete(@PathVariable UUID resumeId) {
     storage.delete(resumeId);
   }
+
+  @GetMapping
+  public List<ResumeStorageService.ResumeRow> list(
+      @RequestParam UUID candidateId,
+      @RequestParam(defaultValue = "false") boolean withS3Head
+  ) {
+    return storage.listByCandidate(candidateId, withS3Head);
+  }
 }

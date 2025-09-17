@@ -32,6 +32,16 @@ public class ResumeStorageService {
 
   public record UploadInit(UUID resumeId, String s3Key, URI uploadUrl) {}
 
+  // 追加（一覧返却用の1行を表す）
+  public record ResumeRow(
+      UUID resumeId,
+      String s3Key,
+      String originalName,
+      String status,
+      Long fileSizeBytes,
+      String etag,
+      java.time.Instant updatedAt
+  ) {}
   @Transactional
   public UploadInit initUpload(UUID candidateId, String originalName, String contentType, String uploadedBy) {
     String ext = Optional.ofNullable(originalName)
@@ -88,5 +98,46 @@ public class ResumeStorageService {
     s3.deleteObject(b -> b.bucket(bucket).key(r.getS3Key()));
     r.setStatus("DELETED");
     repo.save(r);
+  }
+
+  // 一覧取得メソッド
+  @Transactional(readOnly = true)
+  public List<ResumeRow> listByCandidate(UUID candidateId, boolean withS3Head) {
+    // DBからDELETED以外を新しい順で取得（Repositoryの追加メソッドを使用）
+    var list = repo.findByCandidateIdAndStatusNotOrderByCreatedAtDesc(candidateId, "DELETED");
+
+    // まずはDBの値で行DTOを作る
+    List<ResumeRow> rows = list.stream()
+        .map(r -> new ResumeRow(
+            r.getResumeId(),
+            r.getS3Key(),
+            r.getOriginalName(),
+            r.getStatus(),
+            r.getFileSizeBytes(),
+            r.getEtag(),
+            r.getUpdatedAt()
+        ))
+        .toList();
+
+    // 必要ならS3の最新メタ情報（サイズ/ETag）で上書き（COMPLETEDのみ）
+    if (withS3Head) {
+      rows = rows.stream().map(row -> {
+        if ("COMPLETED".equalsIgnoreCase(row.status())) {
+          var head = s3.headObject(b -> b.bucket(bucket).key(row.s3Key()));
+          return new ResumeRow(
+              row.resumeId(),
+              row.s3Key(),
+              row.originalName(),
+              row.status(),
+              head.contentLength(),
+              head.eTag(),
+              row.updatedAt()
+          );
+        }
+        return row;
+      }).toList();
+    }
+
+    return rows;
   }
 }
