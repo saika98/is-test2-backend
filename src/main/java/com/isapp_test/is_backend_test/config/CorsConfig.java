@@ -17,12 +17,14 @@ public class CorsConfig {
 
         // ✅ 許可するオリジン（S3 バケットの URL）
         // ここからのリクエストなら受け入れる、という意味
+        // クラウドの場合
         // config.setAllowedOrigins(List.of(
         //     "http://is-test-frontend.s3-website.ap-northeast-3.amazonaws.com" // S3からの接続を許可(elastic beanstalkにデプロイするとき用)
         // ));
+        // ローカルの場合
         config.setAllowedOrigins(List.of(
             "http://localhost:5174",
-            "http://127.0.0.1:5174" // ローカルからの接続を許可
+            "http://127.0.0.1:5174" 
         ));
 
         // ✅ 許可する HTTP メソッド
